@@ -88,6 +88,13 @@
 		    <artifactId>gson</artifactId>
 		</dependency>
 		
+		<dependency>
+ 		 	<groupId>org.modelmapper</groupId>
+ 		 	<artifactId>modelmapper</artifactId>
+  			<version>3.1.1</version> <!-- Use the latest stable version modelmapper-->
+		</dependency>
+
+		
 
 	</dependencies>
 
