@@ -20,15 +20,18 @@ public class PaymentServiceImpl implements PaymentService {
 	@Override
 	public OrderDTO createOrder(CreateOrderReqDTO createOrderReqDTO) 
 	{
-		String accestoken=tokenService.getAccessToken();
-		System.out.println("acces_token"+accestoken);
+		String  accesstoken=tokenService.getAccessToken();
+		System.out.println("8 access_token : "+accesstoken);
+		
+		
+		
 		
 		OrderDTO Order=new OrderDTO();
 		
 		Order.setId("1234");
 		Order.setStatus("completed");
 		Order.setRedirectUrl("http://localhost:8080/v1/paypal/order/1234");
-		System.out.println("order : "+Order);
+		System.out.println("9 order : "+Order);
 		
 		// TODO Auto-generated method stub
 		return Order;

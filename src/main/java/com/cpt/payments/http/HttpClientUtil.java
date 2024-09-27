@@ -21,8 +21,8 @@ public class HttpClientUtil  {
     public  ResponseEntity<String> makeHttpRequest(HttpRequest httpRequest)
     { 
     	try {
-    		System.out.println("Http call : "+httpRequest);
     		
+    		System.out.println("5 HttpClientUtil http request : "+httpRequest);
     		
     		// Prepare request entity with headers and body
     		HttpEntity<Object> entity = new HttpEntity<>(httpRequest.getRequest(), httpRequest.getHttpHeaders());
@@ -30,7 +30,7 @@ public class HttpClientUtil  {
     		// Make HTTP call using RestTemplate
     		ResponseEntity<String> httpResponseObj = restTemplate.exchange(httpRequest.getUrl(), httpRequest.getMethod(), entity, String.class);
     		
-    		System.out.println("HttpResponse obj "+httpResponseObj);
+    		System.out.println("6 HttpResponse obj "+httpResponseObj);
 			return httpResponseObj;
     	} 
     	catch (HttpClientErrorException | HttpServerErrorException e) {

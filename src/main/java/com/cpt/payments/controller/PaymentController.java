@@ -29,18 +29,17 @@ public class PaymentController {
 	@PostMapping
 	public Order createOrder(@RequestBody PaypalProviderCreateOrderReq createOrder)
 	{
-		System.out.println("order created : "+createOrder);
+		System.out.println("1 order created : "+createOrder);
 																							// Y yObject = modelMapper.map(xObject, Y.class);
 		CreateOrderReqDTO reqDTO = modelMapper.map(createOrder, CreateOrderReqDTO.class);  // convert PaypalProviderCreateOrderReq(x) object 
-		System.out.println("CreateOrderReqDTO created DTO reqDTO : "+reqDTO);			//convert pojo to dto
+		System.out.println("2 CreateOrderReqDTO created DTO reqDTO : "+reqDTO);			  //convert pojo to dto
 
-		
-		System.out.println("paymentService.createOrder(reqDTO) :- "+paymentService.createOrder(reqDTO));       
+		    
 		OrderDTO responseDTO=paymentService.createOrder(reqDTO);												//dto
-		System.out.println("recived res from service responseDTO :"+responseDTO);
+		System.out.println("10 recived res from service responseDTO :"+responseDTO);
 
 		Order order=modelMapper.map(responseDTO, Order.class);                    //convert again dto to pojo object
-		System.out.println("order created : "+order);
+		System.out.println("11 order created : "+order);
 	
 		return order;
 		
