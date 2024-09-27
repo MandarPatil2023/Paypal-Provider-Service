@@ -4,9 +4,6 @@ import lombok.Data;
 
 @Data
 public class CreateOrderReqDTO {
-	
-	
-	
 	private String txnRef;
 	private String currencyCode;
 	private String amountValue;

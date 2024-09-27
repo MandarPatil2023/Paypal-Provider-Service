@@ -35,7 +35,8 @@ public class PaymentController {
 		System.out.println("CreateOrderReqDTO created DTO reqDTO : "+reqDTO);			//convert pojo to dto
 
 		
-		OrderDTO responseDTO=paymentService.createOrder(reqDTO);
+		System.out.println("paymentService.createOrder(reqDTO) :- "+paymentService.createOrder(reqDTO));       
+		OrderDTO responseDTO=paymentService.createOrder(reqDTO);												//dto
 		System.out.println("recived res from service responseDTO :"+responseDTO);
 
 		Order order=modelMapper.map(responseDTO, Order.class);                    //convert again dto to pojo object
