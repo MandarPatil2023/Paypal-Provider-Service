@@ -21,7 +21,8 @@ public class TokenService {
 
 	private HttpClientUtil httpClientUtil;
 	private Gson gson;
-	private static String accessToken;
+	
+	private static String accessToken;	//temp static  , todo redis cache
 	
 	@Value("${paypal.clientId}")
 	private String clientId;
@@ -38,11 +39,14 @@ public class TokenService {
 		this.gson=gson;
 	}
 	
-	public  String getAccessToken() 
+	public String getAccessToken() 
 	{	
+		System.out.println();
+		System.out.println("3 In Token Service");
+		
 		if(accessToken != null)
 		{
-			System.out.println("Returning already available token");
+			System.out.println("3 Returning already available token");
 			return accessToken;
 		}
 		
@@ -54,49 +58,73 @@ public class TokenService {
 		*/
 		
 		System.out.println("3 Getting access token");
-		System.out.println("access token is null so we are making auth call.");
+		System.out.println("3 access token is null so we are making auth call.");
 		
 		HttpRequest httpRequest = new HttpRequest();
 		//"https://api-m.sandbox.paypal.com/v1/oauth2/token"
+		//url
 		httpRequest.setUrl(oauthUrl);
 	
+		//method
 		httpRequest.setMethod(HttpMethod.POST);
 		
-        MultiValueMap<String, String> requestPayload = new LinkedMultiValueMap<>();
+        //body
+		MultiValueMap<String, String> requestPayload = new LinkedMultiValueMap<>();
         requestPayload.add(Constant.OAUTH_GRANT_TYPE, Constant.OAUTH_GRANT_CLIENT_CREDENTIALS);
         httpRequest.setRequest(requestPayload);
         
-        
+        //header
         HttpHeaders httpHeaders =new HttpHeaders();
-       // String clientId="AVnDWHiZXDFgZcCQLMuI4KS7RSYdA8G3gcLM4DxGzoZ39YyfrGucjeJ5MMIzuC2YcsYWPGYpQq_FY7Wx";
-       // String clientSecret="EInXeFoc9lIcP2_LXLuv560na5y-iJjkoMgsJkUOoYHBLczs70Lm33dPcdxQztoBkzwNj9nu-oLC5FGY";
        
-       
-        httpHeaders.set("Username", clientId);
-        httpHeaders.set("Password", clientSecret);
+        httpHeaders.set(Constant.USERNAME, clientId);
+        httpHeaders.set(Constant.PASSWORD, clientSecret);
         httpHeaders.setBasicAuth(clientId,clientSecret);
         httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         httpRequest.setHttpHeaders(httpHeaders);
         
       
-        System.out.println("4 Making http request call "+httpRequest);
+        System.out.println("3 Making http request call "+httpRequest);
        
         ResponseEntity<String> oauthTokenResponse=httpClientUtil.makeHttpRequest(httpRequest);
         
         String resBodyAsJson=oauthTokenResponse.getBody();										//only body will get,all other unnecessary will be gone
         
-        System.out.println("7.1 Get the oauthTokenResponse : "+oauthTokenResponse);
-        System.out.println("7.2 Get the resBodyAsJson : "+resBodyAsJson);
+        System.out.println("3 Get the oauthTokenResponse : "+oauthTokenResponse);
+        System.out.println("3 Get the resBodyAsJson : "+resBodyAsJson);
         
         
         TokenResponse responseAsObj = gson.fromJson(resBodyAsJson, TokenResponse.class);
-        System.out.println("Response : "+responseAsObj);
+        System.out.println("3 Response : "+responseAsObj);
         
        accessToken=responseAsObj.getAccessToken();									//set to static
-        System.out.println("Returning accessToken : "+accessToken);
+        System.out.println("3 Returning accessToken : "+accessToken);
         
         
 		return accessToken;
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

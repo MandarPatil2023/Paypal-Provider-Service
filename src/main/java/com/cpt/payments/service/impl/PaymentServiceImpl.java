@@ -1,42 +1,148 @@
 package com.cpt.payments.service.impl;
-
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.cpt.payments.constant.Constant;
 import com.cpt.payments.dto.CreateOrderReqDTO;
 import com.cpt.payments.dto.OrderDTO;
-import com.cpt.payments.service.TokenService;
+import com.cpt.payments.http.HttpClientUtil;
+import com.cpt.payments.http.HttpRequest;
+import com.cpt.payments.paypal.res.Link;
+import com.cpt.payments.paypal.res.OrderResponse;
+import com.cpt.payments.service.helper.CaptureOrderRequestHelper;
+import com.cpt.payments.service.helper.CreateOrderRequestHelper;
+import com.cpt.payments.service.helper.GetOrderRequestHelper;
 import com.cpt.payments.service.interfaces.PaymentService;
+import com.google.gson.Gson;
 
 @Service
 public class PaymentServiceImpl implements PaymentService {
 	
-	private TokenService tokenService;
-	public PaymentServiceImpl(TokenService tokenService)
+	private Gson gson;
+	private CreateOrderRequestHelper createOrderRequestHelper;
+	private HttpClientUtil httpClientUtil;
+	private CaptureOrderRequestHelper captureOrderRequestHelper;
+	private GetOrderRequestHelper getOrderRequestHelper;
+	
+	public PaymentServiceImpl(CaptureOrderRequestHelper captureOrderRequestHelper,
+								Gson gson,HttpClientUtil httpClientUtil,
+								CreateOrderRequestHelper createOrderRequestHelper,
+								GetOrderRequestHelper getOrderRequestHelper)
 	{	
-		
-		this.tokenService=tokenService;
+		this.getOrderRequestHelper=getOrderRequestHelper;
+		this.captureOrderRequestHelper=captureOrderRequestHelper;
+		this.gson=gson;
+		this.httpClientUtil=httpClientUtil;
+		this.createOrderRequestHelper=createOrderRequestHelper;
 	}
 
 	@Override
 	public OrderDTO createOrder(CreateOrderReqDTO createOrderReqDTO) 
 	{
-		String  accesstoken=tokenService.getAccessToken();
-		System.out.println("8 access_token : "+accesstoken);
 		
+		System.out.println("2 call create order service to call http api");
 		
+		HttpRequest httpRequest = createOrderRequestHelper.getCreateOrder(createOrderReqDTO);
+	
+		ResponseEntity<String> createOrderResponse = httpClientUtil.makeHttpRequest(httpRequest);
+		System.out.println("order created paypal : "+createOrderResponse); 
+	
+		String createOrderResponseAsJson = createOrderResponse.getBody();
 		
+		OrderResponse resAsObj = gson.fromJson(createOrderResponseAsJson, OrderResponse.class);   // covert json string { xyz } to java object
+		System.out.println("Got createOrderResponse:** resAsObj" + resAsObj);
 		
-		OrderDTO Order=new OrderDTO();
-		
-		Order.setId("1234");
-		Order.setStatus("completed");
-		Order.setRedirectUrl("http://localhost:8080/v1/paypal/order/1234");
-		System.out.println("9 order : "+Order);
-		
-		// TODO Auto-generated method stub
-		return Order;
+		OrderDTO orderDTO = new OrderDTO();
+		orderDTO.setId(resAsObj.getId());                            //Get id from paypal and provide it to ecom client
+		orderDTO.setStatus(resAsObj.getStatus());				     //get status 
+
+		String redirectUrl = resAsObj.getLinks().stream()
+				.filter(link -> Constant.REDIRECT_URL_PAYER_ACTION.equals(link.getRel()))
+				.map(Link::getHref)
+				.findFirst()
+				.orElse(null);										// getting payer action link and providing to ecom
+
+		/*	 List<Link> links = payments.getLinks();
+	        for (Link link : links) {
+	            if ("payer-action".equals(link.getRel())) {
+	                System.out.println("Payer Action Link: " + link);    
+	  */         
+	   
+		orderDTO.setRedirectUrl(redirectUrl);
+	        
+		System.out.println("Returning created orderDTO: " + orderDTO);
+		return  orderDTO;
 	}
-	
-	
-	
+
+	@Override
+	public OrderDTO captureOrder(String orderId) {
+		HttpRequest httpRequest = captureOrderRequestHelper.prepareRequest(orderId);
+
+		System.out.println("getOrder|| sending request to HttpClientUtil httpRequest: " + httpRequest);
+		
+		ResponseEntity<String> captureOrderResponse = httpClientUtil.makeHttpRequest(httpRequest);
+
+		String captureOrderResponseAsJson = captureOrderResponse.getBody();
+		OrderResponse resAsObj = gson.fromJson(captureOrderResponseAsJson, OrderResponse.class);
+
+		System.out.println("Got createOrderResponse:** resAsObj" + resAsObj);
+
+		OrderDTO orderDTO = new OrderDTO();
+		orderDTO.setId(resAsObj.getId());
+		orderDTO.setStatus(resAsObj.getStatus());
+
+		String redirectUrl = resAsObj.getLinks().stream()
+				.filter(link -> Constant.REDIRECT_URL_PAYER_ACTION.equals(link.getRel()))
+				.map(Link::getHref)
+				.findFirst()
+				.orElse(null);
+
+		orderDTO.setRedirectUrl(redirectUrl);
+
+		System.out.println("Returning created orderDTO: " + orderDTO);
+
+		return orderDTO;
+	}
+
+	@Override
+	public OrderDTO getOrder(String orderId) {
+		
+		HttpRequest httpRequest= getOrderRequestHelper.getOrder(orderId);
+		 
+		ResponseEntity<String> getOrderResponse = httpClientUtil.makeHttpRequest(httpRequest); 
+		String getOrderResponseAsJson = getOrderResponse.getBody(); 
+		 
+		OrderResponse resAsObj = gson.fromJson(getOrderResponseAsJson, OrderResponse.class); 
+		 
+		OrderDTO orderDTO = new OrderDTO();
+		orderDTO.setId(resAsObj.getId());
+		orderDTO.setStatus(resAsObj.getStatus());
+ 
+		String redirectUrl = resAsObj.getLinks().stream()
+				.filter(link -> Constant.REDIRECT_URL_PAYER_ACTION.equals(link.getRel()))
+				.map(Link::getHref)
+				.findFirst()
+				.orElse(null);
+
+		orderDTO.setRedirectUrl(redirectUrl);
+		
+		
+		return orderDTO;
+	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

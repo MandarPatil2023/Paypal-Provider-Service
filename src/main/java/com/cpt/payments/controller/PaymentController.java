@@ -1,6 +1,8 @@
 package com.cpt.payments.controller;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,27 +31,72 @@ public class PaymentController {
 	@PostMapping
 	public Order createOrder(@RequestBody PaypalProviderCreateOrderReq createOrder)
 	{
-		System.out.println("1 order created : "+createOrder);
+		System.out.println("1 Json Body from ecommerce URL : "+createOrder);
 																							// Y yObject = modelMapper.map(xObject, Y.class);
 		CreateOrderReqDTO reqDTO = modelMapper.map(createOrder, CreateOrderReqDTO.class);  // convert PaypalProviderCreateOrderReq(x) object 
-		System.out.println("2 CreateOrderReqDTO created DTO reqDTO : "+reqDTO);			  //convert pojo to dto
-
-		    
+		System.out.println("1 Convert to DTO object : "+reqDTO);			  //convert pojo to dto
+		
+		System.out.println("1 calling payment service impl create order method");
 		OrderDTO responseDTO=paymentService.createOrder(reqDTO);												//dto
-		System.out.println("10 recived res from service responseDTO :"+responseDTO);
+		System.out.println("1. recived res from service responseDTO :"+responseDTO);
 
 		Order order=modelMapper.map(responseDTO, Order.class);                    //convert again dto to pojo object
-		System.out.println("11 order created : "+order);
+		System.out.println("1. order created : "+order);
 	
 		return order;
+	
+	}
+	
+	@PostMapping("/{id}/capture")	
+	public Order captureOrder(@PathVariable String id)
+	{
+		System.out.println("order id for capture order "+id);
 		
+		OrderDTO responseDTO = paymentService.captureOrder(id);
+		System.out.println("Recived response from Service responseDTO:" + responseDTO);
 		
-	/*	return Order.builder()                                       //res to processing service
-				.id("1234")
-				.status("created")
-				.redirectUrl("http://localhost:8080/v1/paypal/order/1234")
-				.build();
-	*/
+		Order order = modelMapper.map(responseDTO, Order.class);
+		System.out.println("Converted service response to POJO & returning order:" + order);
+		
+		return order;
 	}
 
+	@GetMapping("/{id}")
+	public Order getOrder(@PathVariable String id)
+	{
+		OrderDTO responseDTO = paymentService.getOrder(id);
+		
+		Order order =modelMapper.map(responseDTO, Order.class);
+		
+		
+		return order;
+	}
+	
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

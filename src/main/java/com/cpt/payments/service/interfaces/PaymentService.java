@@ -6,5 +6,7 @@ import com.cpt.payments.dto.OrderDTO;
 public interface  PaymentService {
 	
 	public OrderDTO createOrder(CreateOrderReqDTO createOrderReqDTO);
+	public OrderDTO captureOrder(String orderId);
 
+	public OrderDTO getOrder(String orderId);
 }

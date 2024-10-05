@@ -1,6 +1,7 @@
 package com.cpt.payments.http;
 
 import org.springframework.http.HttpEntity;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -22,15 +23,16 @@ public class HttpClientUtil  {
     { 
     	try {
     		
-    		System.out.println("5 HttpClientUtil http request : "+httpRequest);
+    		System.out.println("HttpClientUtil http request : "+httpRequest);
     		
-    		// Prepare request entity with headers and body
+
     		HttpEntity<Object> entity = new HttpEntity<>(httpRequest.getRequest(), httpRequest.getHttpHeaders());
+    		
     		
     		// Make HTTP call using RestTemplate
     		ResponseEntity<String> httpResponseObj = restTemplate.exchange(httpRequest.getUrl(), httpRequest.getMethod(), entity, String.class);
     		
-    		System.out.println("6 HttpResponse obj "+httpResponseObj);
+    		System.out.println("HttpResponse obj "+httpResponseObj);
 			return httpResponseObj;
     	} 
     	catch (HttpClientErrorException | HttpServerErrorException e) {

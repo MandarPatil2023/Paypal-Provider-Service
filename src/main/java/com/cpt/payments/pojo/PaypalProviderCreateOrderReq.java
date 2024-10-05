@@ -2,7 +2,9 @@ package com.cpt.payments.pojo;
 
 import lombok.Data;
 
+
 @Data
+
 public class PaypalProviderCreateOrderReq {
 	
 	private String txnRef;
