@@ -1,12 +1,17 @@
 package com.cpt.payments.service.impl;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.cpt.payments.constant.Constant;
+import com.cpt.payments.constant.ErrorCodeEnum;
 import com.cpt.payments.dto.CreateOrderReqDTO;
 import com.cpt.payments.dto.OrderDTO;
+import com.cpt.payments.exception.PaypalProviderException;
+import com.cpt.payments.exception.PaypalProviderExceptionHandler;
 import com.cpt.payments.http.HttpClientUtil;
 import com.cpt.payments.http.HttpRequest;
+import com.cpt.payments.paypal.PaypalErrorResponse;
 import com.cpt.payments.paypal.res.Link;
 import com.cpt.payments.paypal.res.OrderResponse;
 import com.cpt.payments.service.helper.CaptureOrderRequestHelper;
@@ -111,7 +116,62 @@ public class PaymentServiceImpl implements PaymentService {
 		 
 		ResponseEntity<String> getOrderResponse = httpClientUtil.makeHttpRequest(httpRequest); 
 		String getOrderResponseAsJson = getOrderResponse.getBody(); 
-		 
+		
+		
+		if(getOrderResponse == null
+				|| getOrderResponse.getBody()==null
+				||getOrderResponse.getBody().trim().isEmpty())
+		{
+			// we  donot no what went wrong . as we dont have response data
+			 
+			//throw custom exception for this situation 
+			throw new PaypalProviderException(
+					ErrorCodeEnum.ERROR_CONNECTING_TO_PAYPAL.getErrorCode(),
+					ErrorCodeEnum.ERROR_CONNECTING_TO_PAYPAL.getErrorMessage(),
+					HttpStatus.INTERNAL_SERVER_ERROR
+					);
+
+		}
+		
+		if(getOrderResponse.getStatusCode() != HttpStatus.OK)
+		{
+			//failed
+			//throw custom exception for this situation 
+			
+			if(getOrderResponse.getStatusCode().is4xxClientError() 
+					|| getOrderResponse.getStatusCode().is5xxServerError())
+			{
+				//json error come from paypal
+				PaypalErrorResponse resAsObj = gson.fromJson(getOrderResponseAsJson, PaypalErrorResponse.class); 
+				
+				String errorCode;
+				String errorMessage;
+				if(resAsObj.getError()!=null) //paypal will throw to kind of exception
+				{      
+					errorCode = resAsObj.getError();
+					errorMessage =resAsObj.getError_description();
+				}
+				else
+				{
+					errorCode = resAsObj.getName();
+					errorMessage = resAsObj.getMessage();
+				}
+				
+				throw new PaypalProviderException(
+						errorCode,
+						errorMessage,
+						HttpStatus.valueOf(getOrderResponse.getStatusCode().value()));//Status value from paypal
+			}
+			//non 200 ,but its not 4xx or 5xx
+			
+			throw new PaypalProviderException(
+					ErrorCodeEnum.INVALID_RESPONSE_FROM_PAYPAL.getErrorCode(),
+					ErrorCodeEnum.INVALID_RESPONSE_FROM_PAYPAL.getErrorMessage(),
+					HttpStatus.BAD_GATEWAY
+					);		
+		}
+		
+		//success - only 200
 		OrderResponse resAsObj = gson.fromJson(getOrderResponseAsJson, OrderResponse.class); 
 		 
 		OrderDTO orderDTO = new OrderDTO();

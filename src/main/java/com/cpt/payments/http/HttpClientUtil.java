@@ -1,7 +1,8 @@
 package com.cpt.payments.http;
 
 import org.springframework.http.HttpEntity;
-
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -35,17 +36,17 @@ public class HttpClientUtil  {
     		System.out.println("HttpResponse obj "+httpResponseObj);
 			return httpResponseObj;
     	} 
-    	catch (HttpClientErrorException | HttpServerErrorException e) {
-    		e.printStackTrace();
+    	catch (HttpClientErrorException | HttpServerErrorException ex) {
+    		ex.printStackTrace();
     		// Handle client or server errors
-    		System.out.println("HTTP error: " + e.getStatusCode() + " " + e.getResponseBodyAsString());
-    		return ResponseEntity.status(e.getStatusCode()).build();
+    		System.out.println("HTTP error: " + ex.getStatusCode() + " " + ex.getResponseBodyAsString());
+    		return ResponseEntity.status(ex.getStatusCode()).body(ex.getResponseBodyAsString());
     	} 
-    	catch (Exception e) {
-    		e.printStackTrace();
+    	catch (Exception ex) {
+    		ex.printStackTrace();
     		// Handle any other exceptions
-    		System.out.println("General error: " + e.getMessage());
-    		return ResponseEntity.status(500).build();
+    		System.out.println("General error: " + ex.getMessage());
+    		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
     	}
     }
 }
